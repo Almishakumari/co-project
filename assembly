@@ -1,0 +1,6 @@
+cd C:\Users\ABHIJAYS\python\hackerrank\c\c++
+git init
+git add co_final.py
+git commit -m "assembly"
+git remote add origin https://github.com/Almishakumari/co-project/new/main
+
