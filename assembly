@@ -1,6 +1,165 @@
-cd C:\Users\ABHIJAYS\python\hackerrank\c\c++
-git init
-git add co_final.py
-git commit -m "assembly"
-git remote add origin https://github.com/Almishakumari/co-project/new/main
+import sys
+import math
+#file
+with open('C:\\Users\\ABHIJAYS\\OneDrive\\Desktop\\testcase.py', 'r') as file:
+    lines=[]
+    for i in file:
+        lines.append(i.strip())
+
+print(lines)    
+nested_lines=[elem.replace(',', ' ').split() for elem in lines]
+print (nested_lines)
+listmain=[]
+register={"s0":"01000",
+          "s1":"01001",
+          "s2":"10010",
+          "s3":"10011",
+          "s4":"10100",
+          "s5":"10101",
+          "s6":"10110",
+          "s7":"10111",
+          "s8":"11000",
+          "s9":"11001",
+          "s10":"11010",
+          "s11":"11011"}
+a={ "a0": "01010",
+    "a1": "01011",
+    "a2": "01100",
+    "a3": "01101",
+    "a4": "01110",
+    "a5": "01111",
+    "a6": "10000",
+    "a7": "10001",}
+extras={ "zero": "00000",
+    "ra": "00001",
+    "sp": "00010",
+    "gp": "00011",
+    "tp": "00100",
+    "t0": "00101",
+    "t1": "00110",
+    "t2": "00111",
+     "t3": "11100",
+    "t4": "11101",
+    "t5": "11110",
+    "t6": "11111"}
+#r type
+add=["0000000","000","0110011"]
+sub=["0100000","000","0110011"]
+sll=["0000000","001","0110011"]
+slt=["0000000","010","0110011"]
+sltu=["0000000","011","0110011"]
+xor=["0000000","100","0110011"]
+srl=["0000000","101","0110011"]
+orr =["0000000","110","0110011"]
+andd=["0000000","111","0110011"]
+
+#i type
+
+lw=["010","0000011"]
+addi=["000", "0010011"]
+sltiu=[ "011", "0010011"]
+jalr=[ "000", "1100111"]
+
+#s type
+
+sw=["010","0100011"]
+#b type
+beq=["000","1100011"]
+bne=["001", "1100011"]
+blt=[ "100", "1100011"]
+bge=[ "101", "1100011"]
+bltu=["110","1100011"]
+bgeu=["111", "1100011"]
+
+# u type
+lui=["0110111"]
+auipc=["0010111"]
+# j type
+jal=["1101111"]
+
+def append_register_value(register_name):
+    if register_name in register:
+        return register[register_name]
+    return None    
+        
+def r(nested_lines):
+    listmain = []
+    for line in nested_lines:
+        opcode = line[0]
+        if opcode == "add":
+            listmain.append(add[0])  # func7
+            listmain.append(append_register_value(line[3]))
+            listmain.append(append_register_value(line[2]))
+            listmain.append(add[1])
+            listmain.append(append_register_value(line[1]))
+            listmain.append(add[2])
+            listmain.append("\n")
+        elif opcode == "sub":
+            listmain.append(sub[0])  # func7
+            listmain.append(append_register_value(line[3]))
+            listmain.append(append_register_value(line[2]))
+            listmain.append(sub[1])
+            listmain.append(append_register_value(line[1]))
+            listmain.append(sub[2])
+            listmain.append("\n")
+        elif opcode == "sll":
+            listmain.append(sll[0])  # func7
+            listmain.append(append_register_value(line[3]))
+            listmain.append(append_register_value(line[2]))
+            listmain.append(sll[1])
+            listmain.append(append_register_value(line[1]))
+            listmain.append(sll[2])
+            listmain.append("\n")
+        elif opcode == "slt":
+            listmain.append(slt[0])  # func7
+            listmain.append(append_register_value(line[3]))
+            listmain.append(append_register_value(line[2]))
+            listmain.append(slt[1])
+            listmain.append(append_register_value(line[1]))
+            listmain.append(slt[2])
+            listmain.append("\n")
+        elif opcode == "sltu":
+            listmain.append(sltu[0])  # func7
+            listmain.append(append_register_value(line[3]))
+            listmain.append(append_register_value(line[2]))
+            listmain.append(sltu[1])
+            listmain.append(append_register_value(line[1]))
+            listmain.append(sltu[2])
+            listmain.append("\n")
+        elif opcode == "xor":
+            listmain.append(xor[0])  # func7
+            listmain.append(append_register_value(line[3]))
+            listmain.append(append_register_value(line[2]))
+            listmain.append(xor[1])
+            listmain.append(append_register_value(line[1]))
+            listmain.append(xor[2])
+            listmain.append("\n")
+        elif opcode == "srl":
+            listmain.append(srl[0])  # func7
+            listmain.append(append_register_value(line[3]))
+            listmain.append(append_register_value(line[2]))
+            listmain.append(srl[1])
+            listmain.append(append_register_value(line[1]))
+            listmain.append(srl[2])
+            listmain.append("\n")
+        elif opcode == "orr":
+            listmain.append(orr[0])  # func7
+            listmain.append(append_register_value(line[3]))
+            listmain.append(append_register_value(line[2]))
+            listmain.append(orr[1])
+            listmain.append(append_register_value(line[1]))
+            listmain.append(orr[2])
+            listmain.append("\n")
+        elif opcode == "andd":
+            listmain.append(andd[0])  # func7
+            listmain.append(append_register_value(line[3]))
+            listmain.append(append_register_value(line[2]))
+            listmain.append(andd[1])
+            listmain.append(append_register_value(line[1]))
+            listmain.append(andd[2])
+            listmain.append("\n")
+    return "".join(listmain)
+
+result = r(nested_lines)
+print(result)
 
