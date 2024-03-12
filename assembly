@@ -80,7 +80,12 @@ jal=["1101111"]
 def append_register_value(register_name):
     if register_name in register:
         return register[register_name]
-    return None    
+    elif register_name in extras:
+        return extras[register_name]
+    elif register_name in a:
+        return a[register_name]
+    else:
+        raise ValueError(f"Invalid register name: {register_name}")   
         
 def r(nested_lines):
     listmain = []
@@ -158,8 +163,213 @@ def r(nested_lines):
             listmain.append(append_register_value(line[1]))
             listmain.append(andd[2])
             listmain.append("\n")
+       elif opcode == "beq":
+            listmain.append("00000000000000000000000000000000")  # Virtual Halt instruction    
     return "".join(listmain)
 
 result = r(nested_lines)
 print(result)
+def decimal_to_imm_format_for_j(decimal_number):
+    binary_str = bin(decimal_number & 0xffffffff)[2:].zfill(32)  # Convert to 32-bit binary string
+    imm_format = binary_str[0] + binary_str[10:20] + binary_str[1] + binary_str[11] + binary_str[19] + binary_str[12]
+    return imm_format
 
+def decimal_to_binary(decimal_number, num_bits=12):
+    try:
+        decimal_number = int(decimal_number)  # Convert the input to an integer
+    except ValueError:
+        return 'Error: Input must be a valid integer.'
+    if decimal_number >= 0:
+        return bin(decimal_number)[2:].zfill(num_bits)  # Convert positive numbers to binary and zero-pad
+    else:
+        binary_positive = bin(abs(decimal_number))[2:]  # Convert the absolute value to binary
+        inverted = ''.join('1' if bit == '0' else '0' for bit in binary_positive)  # Invert the bits
+        inverted = inverted.zfill(num_bits)  # Zero-pad to fill the specified number of bits
+        index = inverted.rfind('0')  # Find the rightmost '0' bit
+        if index == -1:
+            return '1' + '0' * (num_bits - 1)  # If all bits are '1', return the smallest negative number for the specified number of bits
+        else:
+            return inverted[:index] + '1' + inverted[index + 1:]  # Perform the two's complement inversion and add 1
+
+def extract_bits(binary_str, start_bit, end_bit):
+    return binary_str[start_bit:end_bit+1]
+
+
+def I(nested_lines):
+    listmain = []
+    for line in nested_lines:
+        opcode = line[0]
+        if opcode == "lw":
+
+            listmain.append(decimal_to_binary(line[2],12))  # func7
+            listmain.append(append_register_value(line[3]))
+            listmain.append(lw[0])
+            listmain.append(append_register_value(line[1]))
+            listmain.append(lw[1])
+            listmain.append("\n")
+        elif opcode == "addi":
+            listmain.append(decimal_to_binary(line[3],12))  # func7
+            listmain.append(append_register_value(line[2]))
+            listmain.append(addi[0])
+            listmain.append(append_register_value(line[1]))
+            listmain.append(addi[1])
+            listmain.append("\n")
+        elif opcode == "sltiu":
+            listmain.append(decimal_to_binary(line[3],12))  # func7
+            listmain.append(append_register_value(line[2]))
+            listmain.append(sltiu[0])
+            listmain.append(append_register_value(line[1]))
+            listmain.append(sltiu[1])
+            listmain.append("\n")
+        elif opcode == "jalr":
+            listmain.append(decimal_to_binary(line[3],12))  # func7
+            listmain.append(append_register_value(line[2]))
+            listmain.append(jalr[0])
+            listmain.append(append_register_value(line[1]))
+            listmain.append(jalr[1])
+            listmain.append("\n")  
+        elif opcode == "beq":
+            listmain.append("00000000000000000000000000000000")  # Virtual Halt instruction         
+    return "".join(listmain)         
+
+result = I(nested_lines)
+print(result)
+def s(nested_lines):
+    listmain = []
+    for line in nested_lines:
+        opcode = line[0]
+        if opcode == "sw":
+            binary_string=decimal_to_binary(line[2],12)
+            listmain.append(extract_bits(binary_string,0,7))  # func7
+            listmain.append(append_register_value(line[1]))
+            listmain.append(append_register_value(line[3]))
+            listmain.append(sw[0])
+            listmain.append(extract_bits(binary_string,7,12))
+            listmain.append(sw[1])
+            listmain.append("\n")
+    return "".join(listmain)
+        
+result = s(nested_lines)
+print(result) 
+def u(nested_lines):
+    listmain = []
+    for line in nested_lines:
+        opcode = line[0]
+        if opcode == "lui":
+            binary_string=decimal_to_binary(line[2],20)
+            listmain.append(binary_string)  # func7
+            listmain.append(append_register_value(line[1]))
+            listmain.append(lui[0])
+            listmain.append("\n")
+        elif opcode == "auipc":
+            binary_string=decimal_to_binary(line[2],20)
+            listmain.append(binary_string)  # func7
+            listmain.append(append_register_value(line[1]))
+            listmain.append(auipc[0])
+            listmain.append("\n")
+    return "".join(listmain)        
+result = u(nested_lines)
+print(result) 
+
+def j(nested_lines):
+    listmain = []
+    for line in nested_lines:
+        opcode = line[0]
+        if opcode == "jal":
+            binary_string=decimal_to_imm_format_for_j(line[2])
+            listmain.append(append_register_value(line[1]))
+            listmain.append(jal[0])
+            listmain.append("\n")
+# result = j(nested_lines)
+# print(result)
+
+def decimal_to_imm_format_for_B_func7(decimal_number):
+    binary_str = bin(decimal_number & 0xffffffff)[2:].zfill(32)  # Convert to 32-bit binary string
+    imm_format = binary_str[22:25] + binary_str[27]
+    return imm_format
+
+def decimal_to_imm_format_b(decimal_number):
+    binary_str = bin(decimal_number & 0xff)[2:].zfill(8)  # Convert to 8-bit binary string
+    imm_format = binary_str[4] + binary_str[0] + binary_str[4]
+    return imm_format
+
+def b(nested_lines):
+    listmain = []
+    for line in nested_lines:
+        opcode = line[0]
+        if opcode == "beq":
+            listmain.append(decimal_to_imm_format_for_B_func7(line[3]))  # func7
+            listmain.append(append_register_value(line[2]))
+            listmain.append(append_register_value(line[1]))
+            listmain.append(beq[0])
+            listmain.append(decimal_to_imm_format_b(line[3]))
+            listmain.append(beq[1])
+            listmain.append("\n")
+        elif opcode == "bne":
+            listmain.append(decimal_to_imm_format_for_B_func7(line[3]))  # func7
+            listmain.append(append_register_value(line[2]))
+            listmain.append(append_register_value(line[1]))
+            listmain.append(bne[0])
+            listmain.append(decimal_to_imm_format_b(line[3]))
+            listmain.append(bne[1])
+            listmain.append("\n")    
+        elif opcode == "blt":
+            listmain.append(decimal_to_imm_format_for_B_func7(line[3]))  # func7
+            listmain.append(append_register_value(line[2]))
+            listmain.append(append_register_value(line[1]))
+            listmain.append(blt[0])
+            listmain.append(decimal_to_imm_format_b(line[3]))
+            listmain.append(blt[1])
+            listmain.append("\n") 
+        elif opcode == "bge":
+            listmain.append(decimal_to_imm_format_for_B_func7(line[3]))  # func7
+            listmain.append(append_register_value(line[2]))
+            listmain.append(append_register_value(line[1]))
+            listmain.append(bge[0])
+            listmain.append(decimal_to_imm_format_b(line[3]))
+            listmain.append(bge[1])
+            listmain.append("\n")   
+        elif opcode == "bltu":
+            listmain.append(decimal_to_imm_format_for_B_func7(line[3]))  # func7
+            listmain.append(append_register_value(line[2]))
+            listmain.append(append_register_value(line[1]))
+            listmain.append(bltu[0])
+            listmain.append(decimal_to_imm_format_b(line[3]))
+            listmain.append(bltu[1])
+            listmain.append("\n")
+        elif opcode == "bgeu":
+            listmain.append(decimal_to_imm_format_for_B_func7(line[3]))  # func7
+            listmain.append(append_register_value(line[2]))
+            listmain.append(append_register_value(line[1]))
+            listmain.append(bgeu[0])
+            listmain.append(decimal_to_imm_format_b(line[3]))
+            listmain.append(bgeu[1])
+            listmain.append("\n")   
+# result = b(nested_lines)
+# print(result)                     
+R_type = ["add","sub","slt","sltu","xor","sll","srl","or" ,"and"]
+I_type = ["lw","addi","sltiu","jalr"]
+S_type  = ["sw"]
+B_type = ["beq","bne","blt","bge", "bltu","bgeu"]
+U_type  = ["lui","auipc"]
+J_type = ["jal"]
+
+           
+instructions = R_type + I_type + S_type + B_type + U_type + J_type
+for x in nested_lines:
+    if x[0] in instructions:
+        if x[0] in R_type:
+            print(r(x))
+        elif x[0] in I_type:
+            print(I(x))
+        elif x[0] in S_type:
+            print(s(x))
+        elif x[0] in B_type:
+            print(b(x))
+        elif x[0] in U_type:
+            print(u(x))
+        elif x[0] in J_type:
+            print(j(x))
+    else:
+        print(f"Error: Unknown instruction '{x[0]}'.")
+        sys.exit(1)
